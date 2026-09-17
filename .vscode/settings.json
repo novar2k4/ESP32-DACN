@@ -1,0 +1,10 @@
+{
+    "idf.portWin": "COM5",
+    "idf.openOcdConfigs": [
+        "board/esp32s3-bridge.cfg"
+    ],
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}",
+        "--query-driver=C:/Users/ADMIN/.platformio/packages/toolchain-xtensa-esp32s3/bin/xtensa-esp32s3-elf-*"
+    ]
+}
