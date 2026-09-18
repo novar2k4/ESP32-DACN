@@ -13,27 +13,35 @@ void setButton(){
     if(s1 == 0){
         if (lastBounds1 == 0) {
             lastBounds1 = 1;
+            glob_buttons1 = lastBounds1;
         }
-        else lastBounds1 = 0;
+        else {
+            lastBounds1 = 0;
+            glob_buttons1 = lastBounds1;
+        }
     }
 
-    if(s2 == 0){
-        if (lastBounds2 == 0){
-            lastBounds2 = 1;
-        }
-        else lastBounds2 = 0;
-    }
+    // if(s2 == 0){
+    //     if (lastBounds2 == 0){
+    //         lastBounds2 = 1;
+    //         glob_buttons2 = lastBounds2;
+    //     }
+    //     else {
+    //         lastBounds2 = 0;
+    //         glob_buttons2 = lastBounds2;
+    //     }
+    // }
     Serial.print("S1: ");
     Serial.print(lastBounds1);
-    Serial.print(" |S2: ");
-    Serial.println(lastBounds2);
+    // Serial.print(" |S2: ");
+    // Serial.println(lastBounds2);
 
     delay(100);
 }
 
 void getButton(){
     s1 = digitalRead(BUTTON_S1);
-    s2 = digitalRead(BUTTON_S2);
+    // s2 = digitalRead(BUTTON_S2);
     delay(100);
 }
 

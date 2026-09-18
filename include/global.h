@@ -24,6 +24,7 @@ extern float global_light;
 extern int wifi;
 extern int s1,s2;
 extern int lastBounds1,lastBounds2;
+extern int  glob_buttons2, glob_buttons1;
 extern PubSubClient client;
 
 #endif

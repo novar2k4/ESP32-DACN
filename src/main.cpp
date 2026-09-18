@@ -14,11 +14,11 @@ void setup() {
   Serial.begin(115200);
   initLED_Blinky();
   initNeoBlinky();
-  // initDHT();
+  initDHT();
   initWiFi();
   // initLittleFS();
   // initWebSocket();
-  // coreiot_init();
+  coreiot_init();
   initLCD();
   initLight();
   Button();

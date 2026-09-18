@@ -10,7 +10,7 @@
 const char* coreIOT_Server = "app.coreiot.io";
 const char* coreIOT_Token = "cbgahhpy0q409xy74gya";
 const int mqttPort = 1883;
-
+int lastButtonS1 = -1;
 
 // =====================================================
 // MQTT CLIENT
@@ -209,14 +209,40 @@ void coreiot_task(void *pvParameters)
         // Keep MQTT connection alive
         // -------------------------------------------------
         client.loop();
+        // ==========================================
+        // Update S1 attribute state to CoreIoT
+        // ==========================================
+
+        if (glob_buttons1 != lastButtonS1)
+        {
+            lastButtonS1 = glob_buttons1;
+
+            String attributePayload =
+                "{\"button_s1\":" +
+                String(glob_buttons1 ? "true" : "false") +
+                "}";
+
+            if (client.publish(
+                "v1/devices/me/attributes",
+                attributePayload.c_str()
+            ))
+            {
+                Serial.print("S1 updated: ");
+                Serial.println(attributePayload);
+            }
+            else
+            {
+                Serial.println("Failed to update S1");
+            }
+        }
+
         // -------------------------------------------------
         // Create telemetry JSON
         // -------------------------------------------------
         String payload =
-            "{\"temperature\":" +
-            String(global_temperature, 1) +
-            ",\"humidity\":" +
-            String(global_humidity, 1) +
+            "{\"temperature\":" + String(global_temperature, 1) + 
+            ",\"humidity\":" + String(global_humidity, 1) +
+            // ",\"button\":" + String(glob_buttons1) +
             "}";
 
 
@@ -244,7 +270,7 @@ void coreiot_task(void *pvParameters)
         // -------------------------------------------------
         // Publish every 2 seconds
         // -------------------------------------------------
-        vTaskDelay(2000);
+        vTaskDelay(1000);
     }
 }
 
