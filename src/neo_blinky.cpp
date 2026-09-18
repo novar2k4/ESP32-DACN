@@ -1,30 +1,6 @@
 #include "neo_blinky.h"
 
 void neo_blinky(void *pvParameters) {
-    // Adafruit_NeoPixel strip(LED_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
-    // strip.begin();
-    // // Set all pixels to off to start
-    // strip.clear();
-    // strip.show();
-
-    // uint32_t colors[] = {
-    //     strip.Color(255, 0, 0),    // Red
-    //     strip.Color(255, 255, 0),  // Yellow
-    //     strip.Color(0, 0, 255),    // Blue
-    //     strip.Color(0, 255, 0)     // Green
-    // };
-    // const int numColors = sizeof(colors) / sizeof(colors[0]);
-
-    // while(1) {         
-    //     for (int i = 0; i < LED_COUNT; i++) {
-    //         strip.setPixelColor(i, colors[i % numColors]); 
-    //         strip.show(); 
-    //         vTaskDelay(500);
-    //         strip.setPixelColor(i, strip.Color(0, 0, 0)); 
-    //         strip.show(); 
-    //     }                 
-    // }
-
     Adafruit_NeoPixel Connection(LED_COUNT_W, NEO_PIN_W, NEO_GRB + NEO_KHZ800);
     Connection.begin();
     // Set all pixels to off to start

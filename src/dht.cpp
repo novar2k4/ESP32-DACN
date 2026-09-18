@@ -9,12 +9,12 @@ void dht_task(void *pvParameters) {
         DHT.read();
         global_temperature = DHT.getTemperature();
         global_humidity = DHT.getHumidity();
-        Serial.print("Temperature: ");
-        Serial.print(global_temperature, 1);
-        Serial.print("°C     ");
-        Serial.print("Humidity: ");
-        Serial.print(global_humidity, 1);
-        Serial.println("%");  
+        // Serial.print("Temperature: ");
+        // Serial.print(global_temperature, 1);
+        // Serial.print("°C     ");
+        // Serial.print("Humidity: ");
+        // Serial.print(global_humidity, 1);
+        // Serial.println("%");  
         vTaskDelay(3000);
         
     } 

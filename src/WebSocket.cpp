@@ -53,6 +53,8 @@ void checkWiFistatus() { // Check
   } else {
     wifi = 1;
   }
+  // Serial.print("WiFi status: ");
+  // Serial.println(wifi);
 }
 
 void notifyClients(String sensorReadings) {

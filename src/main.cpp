@@ -8,22 +8,27 @@
   #include "LFS.h"
   #include "WebSocket.h"
   #include "CoreIoT.h"
+  #include "LCD.h"
+
 void setup() {
   Serial.begin(115200);
-  // initLED_Blinky();
+  initLED_Blinky();
   initNeoBlinky();
-  initDHT();
-  // delay(2000); // Wait for 2 seconds before starting CoreIoT
-  // Serial.println("Starting Wifi...");
+  // initDHT();
   initWiFi();
   // initLittleFS();
   // initWebSocket();
-  // delay(2000); // Wait for 2 seconds before starting CoreIoT
-  // Serial.println("Starting CoreIoT...");
-  coreiot_init();
+  // coreiot_init();
+  initLCD();
+  initLight();
+  Button();
 }
 
 void loop() {
   // webSocketLoop();
   checkWiFistatus();
+  // Update LCD display
+  updateLCD();
+  getButton();
+  setButton();
 }
