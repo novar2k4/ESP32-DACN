@@ -1,7 +1,7 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-
+// LIBS
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <DHT20.h>
@@ -15,8 +15,16 @@
 #include <PubSubClient.h>
 #include "LiquidCrystal_I2C.h"
 #include <Wire.h> 
-#include "Light.h"
-#include "DualButton.h"
+#include <NimBLEDevice.h>
+
+// Include H 
+#include "led_blinky.h"
+#include "neo_blinky.h"
+#include "LFS.h"
+#include "WebSocket.h"
+#include "CoreIoT.h"
+#include "BLE.h"
+// #include "BLE.cpp"
 
 extern float global_temperature;
 extern float global_humidity;
@@ -26,5 +34,8 @@ extern int s1,s2;
 extern int lastBounds1,lastBounds2;
 extern int  glob_buttons2, glob_buttons1;
 extern PubSubClient client;
+extern NimBLEClient* client1;
+extern bool switch_state;
+void LEDWiFistatus();
 
-#endif
+#endif  

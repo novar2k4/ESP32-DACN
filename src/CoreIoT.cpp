@@ -2,13 +2,12 @@
 
 #include "global.h"
 
-
 // =====================================================
 // CoreIoT CONFIGURATION
 // =====================================================
 
-const char* coreIOT_Server = "app.coreiot.io";
-const char* coreIOT_Token = "cbgahhpy0q409xy74gya";
+const char *coreIOT_Server = "app.coreiot.io";
+const char *coreIOT_Token = "cbgahhpy0q409xy74gya";
 const int mqttPort = 1883;
 int lastButtonS1 = -1;
 
@@ -18,7 +17,6 @@ int lastButtonS1 = -1;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-
 
 // =====================================================
 // MQTT RECONNECT
@@ -49,8 +47,7 @@ void reconnect()
             client.subscribe("v1/devices/me/rpc/request/+");
 
             Serial.println(
-                "Subscribed to v1/devices/me/rpc/request/+"
-            );
+                "Subscribed to v1/devices/me/rpc/request/+");
         }
         else
         {
@@ -63,14 +60,13 @@ void reconnect()
     }
 }
 
-
 // =====================================================
 // MQTT CALLBACK
 // =====================================================
 
 void callback(
-    char* topic,
-    byte* payload,
+    char *topic,
+    byte *payload,
     unsigned int length)
 {
     Serial.print("Message arrived [");
@@ -85,7 +81,6 @@ void callback(
 
     Serial.print("Payload: ");
     Serial.println(message);
-
 
     // -------------------------------------------------
     // Parse JSON
@@ -103,12 +98,11 @@ void callback(
         return;
     }
 
-
     // -------------------------------------------------
     // Read RPC method
     // -------------------------------------------------
 
-    const char* method = doc["method"];
+    const char *method = doc["method"];
 
     if (method == nullptr)
     {
@@ -116,43 +110,28 @@ void callback(
         return;
     }
 
-
     // -------------------------------------------------
-    // Handle LED RPC
+    // Handle RPC
     // -------------------------------------------------
 
-    if (strcmp(method, "setStateLED") == 0)
+    if (strcmp(method, "setSwitchState") == 0)
     {
-        const char* params = doc["params"];
+        bool state = doc["params"];
 
-        if (params == nullptr)
+        switch_state = state;
+
+        Serial.print("CoreIoT Switch state = ");
+
+        if (switch_state)
         {
-            Serial.println("RPC params missing.");
-            return;
-        }
-
-        if (strcmp(params, "ON") == 0)
-        {
-            Serial.println("Device turned ON.");
-
-            // TODO:
-            // Turn LED ON here
+            Serial.println("ON");
         }
         else
         {
-            Serial.println("Device turned OFF.");
-
-            // TODO:
-            // Turn LED OFF here
+            Serial.println("OFF");
         }
     }
-    else
-    {
-        Serial.print("Unknown method: ");
-        Serial.println(method);
-    }
 }
-
 
 // =====================================================
 // COREIOT SETUP
@@ -172,19 +151,16 @@ void setup_coreiot()
         Serial.println(WiFi.localIP());
     }
 
-
     // Configure MQTT server
     client.setServer(
         coreIOT_Server,
-        mqttPort
-    );
+        mqttPort);
 
     // Configure MQTT callback
     client.setCallback(callback);
 
     Serial.println("CoreIoT MQTT initialized.");
 }
-
 
 // =====================================================
 // COREIOT TASK
@@ -223,9 +199,8 @@ void coreiot_task(void *pvParameters)
                 "}";
 
             if (client.publish(
-                "v1/devices/me/attributes",
-                attributePayload.c_str()
-            ))
+                    "v1/devices/me/attributes",
+                    attributePayload.c_str()))
             {
                 Serial.print("S1 updated: ");
                 Serial.println(attributePayload);
@@ -240,11 +215,10 @@ void coreiot_task(void *pvParameters)
         // Create telemetry JSON
         // -------------------------------------------------
         String payload =
-            "{\"temperature\":" + String(global_temperature, 1) + 
+            "{\"temperature\":" + String(global_temperature, 1) +
             ",\"humidity\":" + String(global_humidity, 1) +
-            // ",\"button\":" + String(glob_buttons1) +
+            ",\"light\":" + String(global_light) +
             "}";
-
 
         // -------------------------------------------------
         // Publish telemetry
@@ -252,19 +226,19 @@ void coreiot_task(void *pvParameters)
 
         if (client.connected())
         {
-            bool success = client.publish("v1/devices/me/telemetry",payload.c_str()
-            );
+            bool success = client.publish("v1/devices/me/telemetry", payload.c_str());
 
             if (success)
             {
-                Serial.print("Published to CoreIoT: ");
-                Serial.println(payload);
+                // Serial.print("Switch state:");
+                // Serial.println(switch_state);
+                // Serial.print("Published to CoreIoT: ");
+                // Serial.println(payload);
             }
             else
             {
                 Serial.println(
-                    "Failed to publish telemetry."
-                );
+                    "Failed to publish telemetry.");
             }
         }
         // -------------------------------------------------
@@ -274,12 +248,11 @@ void coreiot_task(void *pvParameters)
     }
 }
 
-
 // =====================================================
 // COREIOT INIT
 // =====================================================
 
 void coreiot_init()
 {
-    xTaskCreate(coreiot_task,"CoreIoT Task",4096,NULL,2,NULL);
+    xTaskCreate(coreiot_task, "CoreIoT Task", 4096, NULL, 2, NULL);
 }
