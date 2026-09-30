@@ -3,7 +3,7 @@
 void setup() {
   Serial.begin(115200);
   // initLED_Blinky();
-  // initNeoBlinky();
+  initNeoBlinky();
   initWiFi();
   // initLittleFS();
   // initWebSocket();
@@ -13,7 +13,8 @@ void setup() {
 
 void loop() {
   // webSocketLoop();
-  checkWiFistatus();
+  checkWiFistatus();  
   LEDWiFistatus();
+  // updateLEDFromLight();
 }
 

@@ -12,4 +12,5 @@
 void initNeoBlinky();
 void neo_blinky(void *pvParameters);
 void LEDWiFistatus();
+void updateLEDFromLight();
 #endif // NEO_BLINKY_H
