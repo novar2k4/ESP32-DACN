@@ -102,33 +102,98 @@ void callback(
     // Read RPC method
     // -------------------------------------------------
 
-    const char *method = doc["method"];
+    // const char *method = doc["method"];
 
-    if (method == nullptr)
-    {
-        Serial.println("RPC method missing.");
-        return;
-    }
+    // if (method == nullptr)
+    // {
+    //     Serial.println("RPC method missing.");
+    //     return;
+    // }
 
     // -------------------------------------------------
     // Handle RPC
     // -------------------------------------------------
 
-    if (strcmp(method, "setSwitchState") == 0)
+    // if (strcmp(method, "setSwitchState") == 0)
+    // {
+    //     bool state = doc["params"];
+
+    //     switch_state = state;
+
+    //     Serial.print("CoreIoT Switch state = ");
+
+    //     if (switch_state)
+    //     {
+    //         Serial.println("ON");
+    //     }
+    //     else
+    //     {
+    //         Serial.println("OFF");
+    //     }
+    // }
+
+    String topicStr = String(topic);
+
+    // =================================================
+    // RPC request
+    // =================================================
+    if (topicStr.startsWith("v1/devices/me/rpc/request/"))
     {
-        bool state = doc["params"];
+        // Lấy RPC ID từ topic
+        String requestId =
+            topicStr.substring(
+                String("v1/devices/me/rpc/request/").length());
 
-        switch_state = state;
+        const char *method = doc["method"];
 
-        Serial.print("CoreIoT Switch state = ");
-
-        if (switch_state)
+        // -------------------------------------------------
+        // setMaxLight(value)
+        // -------------------------------------------------
+        if (strcmp(method, "setMaxLight") == 0)
         {
-            Serial.println("ON");
+            float value = doc["params"].as<float>();
+
+            // Giới hạn an toàn
+            if (value < 0.0f)
+                value = 0.0f;
+
+            if (value > 500.0f)
+                value = 500.0f;
+
+            max_light = value;
+
+            Serial.print("[RPC] max_light = ");
+            Serial.println(max_light);
+
+            // Trả lại giá trị hiện tại cho Core IoT
+            String responseTopic =
+                "v1/devices/me/rpc/response/" + requestId;
+
+            String response =
+                String(max_light, 1);
+
+            client.publish(
+                responseTopic.c_str(),
+                response.c_str());
         }
-        else
+
+        // -------------------------------------------------
+        // getMaxLight()
+        // -------------------------------------------------
+        else if (strcmp(method, "getMaxLight") == 0)
         {
-            Serial.println("OFF");
+            Serial.print("[RPC] getMaxLight -> ");
+            Serial.println(max_light);
+
+            String responseTopic =
+                "v1/devices/me/rpc/response/" + requestId;
+
+            String response =
+                String(max_light, 1);
+
+            client.publish(
+                responseTopic.c_str(),
+                response.c_str());
         }
     }
 }

@@ -10,4 +10,5 @@ int  glob_buttons1, glob_buttons2 = 0;
 int s1 = 0;
 int s2 = 0;
 bool switch_state = 0;
+float max_light = 330;
 void LEDWiFistatus();

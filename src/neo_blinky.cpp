@@ -16,17 +16,17 @@ void neo_blinky(void *pvParameters)
     while (1)
     {
         float light = global_light;
-        if (light > 330 ) light = 330.0f;
+        if (light > max_light ) light = max_light;
 
-        float brightness = 255.0f * (1.0f - light / 330.0f);
+        float brightness = 255.0f * (1.0f - light / max_light);
 
         LED4.setBrightness(brightness);
 
-        LED4.setPixelColor(0, LED4.Color(0, 0, 255));
+        LED4.setPixelColor(0, LED4.Color(255, 20, 147));
         
         LED4.show();
         Serial.print("LIGHT: ");
-         Serial.println(light);
+        Serial.println(light);
         Serial.print("Brightness: ");
         Serial.println(brightness);
         vTaskDelay(50);
