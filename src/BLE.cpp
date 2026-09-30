@@ -64,6 +64,7 @@ void lightNotifyCallback(
     Serial.print("[LIGHT] ");
     Serial.print(global_light, 2);
     Serial.println(" lux");
+    vTaskDelay(50);
 }
 
 // =====================================================
@@ -102,6 +103,7 @@ void tempNotifyCallback(
     Serial.print("[TEMPERATURE] ");
     Serial.print(global_temperature, 2);
     Serial.println(" °C");
+    vTaskDelay(50);
 }
 
 // =====================================================
