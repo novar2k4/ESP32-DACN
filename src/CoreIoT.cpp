@@ -254,27 +254,27 @@ void coreiot_task(void *pvParameters)
         // Update S1 attribute state to CoreIoT
         // ==========================================
 
-        if (glob_buttons1 != lastButtonS1)
-        {
-            lastButtonS1 = glob_buttons1;
+        // if (glob_buttons1 != lastButtonS1)
+        // {
+        //     lastButtonS1 = glob_buttons1;
 
-            String attributePayload =
-                "{\"button_s1\":" +
-                String(glob_buttons1 ? "true" : "false") +
-                "}";
+        //     String attributePayload =
+        //         "{\"button_s1\":" +
+        //         String(glob_buttons1 ? "true" : "false") +
+        //         "}";
 
-            if (client.publish(
-                    "v1/devices/me/attributes",
-                    attributePayload.c_str()))
-            {
-                Serial.print("S1 updated: ");
-                Serial.println(attributePayload);
-            }
-            else
-            {
-                Serial.println("Failed to update S1");
-            }
-        }
+        //     if (client.publish(
+        //             "v1/devices/me/attributes",
+        //             attributePayload.c_str()))
+        //     {
+        //         Serial.print("S1 updated: ");
+        //         Serial.println(attributePayload);
+        //     }
+        //     else
+        //     {
+        //         Serial.println("Failed to update S1");
+        //     }
+        // }
 
         // -------------------------------------------------
         // Create telemetry JSON

@@ -10,7 +10,7 @@
 #define LED_COUNT_W 1 // YOLO UNO LED 
 
 void initNeoBlinky();
-void neo_blinky(void *pvParameters);
+void neo_blinky();
 void LEDWiFistatus();
-void updateLEDFromLight();
+// void updateLEDFromLight();
 #endif // NEO_BLINKY_H

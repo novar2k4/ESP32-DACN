@@ -25,10 +25,10 @@ void neo_blinky(void *pvParameters)
         LED4.setPixelColor(0, LED4.Color(255, 20, 147));
         
         LED4.show();
-        Serial.print("LIGHT: ");
-        Serial.println(light);
-        Serial.print("Brightness: ");
-        Serial.println(brightness);
+        // Serial.print("LIGHT: ");
+        // Serial.println(light);
+        // Serial.print("Brightness: ");
+        // Serial.println(brightness);
         vTaskDelay(50);
     }
 }
@@ -69,35 +69,6 @@ void LEDWiFistatus()
         Connection.show();
         vTaskDelay(500);
     }
-}
-
-void updateLEDFromLight()
-{
-    float light = global_light;
-    // -----------------------------------------
-    // Inverse mapping
-    // 0 lux   -> 255 brightness
-    // 4095 lux -> 0 brightness
-    // -----------------------------------------
-
-    uint8_t brightness =
-        (uint8_t)(255.0f - (light / 4095.0f) * 255.0f);
-
-    // -----------------------------------------
-    // Set brightness
-    // -----------------------------------------
-
-    LED4.setBrightness(brightness);
-
-    // -----------------------------------------
-    // Set LED colors
-    // -----------------------------------------
-    LED4.setPixelColor(
-        0,
-        LED4.Color(0, 0, 255));
-    LED4.show();
-    Serial.print(" lux -> Brightness: ");
-    Serial.println(brightness);
 }
 
 void initNeoBlinky()

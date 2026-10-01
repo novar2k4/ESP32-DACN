@@ -64,6 +64,7 @@ void lightNotifyCallback(
     Serial.print("[LIGHT] ");
     Serial.print(global_light, 2);
     Serial.println(" lux");
+    
     vTaskDelay(50);
 }
 

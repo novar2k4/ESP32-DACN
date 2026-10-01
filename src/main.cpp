@@ -13,8 +13,8 @@ void setup() {
 
 void loop() {
   // webSocketLoop();
-  checkWiFistatus();  
   LEDWiFistatus();
+  checkWiFistatus();  
   // updateLEDFromLight();
 }
 
