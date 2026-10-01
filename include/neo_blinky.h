@@ -9,7 +9,10 @@
 #define NEO_PIN_W 45 // YOLO UNO Neopixel
 #define LED_COUNT_W 1 // YOLO UNO LED 
 
+extern TaskHandle_t neoBlinkyTaskHandle;
+
 void initNeoBlinky();
+void stopNeoBlinky();
 void neo_blinky();
 void LEDWiFistatus();
 // void updateLEDFromLight();

@@ -3,35 +3,46 @@
 Adafruit_NeoPixel Connection(LED_COUNT_W, NEO_PIN_W, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel LED4(LED_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
+TaskHandle_t neoBlinkyTaskHandle = NULL;
+
 void neo_blinky(void *pvParameters)
 {
     LED4.begin();
-    // Connection.begin();
 
     LED4.clear();
-    // Connection.clear();
     LED4.show();
-    // Connection.show();
 
-    while (1)
+    while (switch_state)
     {
         float light = global_light;
-        if (light > max_light ) light = max_light;
+
+        if (light > max_light)
+            light = max_light;
 
         float brightness = 255.0f * (1.0f - light / max_light);
 
         LED4.setBrightness(brightness);
 
-        LED4.setPixelColor(0, LED4.Color(255, 20, 147));
-        
+        LED4.setPixelColor(
+            0,
+            LED4.Color(255, 20, 147)
+        );
+
         LED4.show();
-        // Serial.print("LIGHT: ");
-        // Serial.println(light);
-        // Serial.print("Brightness: ");
-        // Serial.println(brightness);
-        vTaskDelay(50);
+
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
+
+    // Khi switch_state = false
+    // tắt LED trước khi task kết thúc
+    LED4.clear();
+    LED4.show();
+
+    neoBlinkyTaskHandle = NULL;
+
+    vTaskDelete(NULL);
 }
+
 
 void LEDWiFistatus()
 {
@@ -73,5 +84,33 @@ void LEDWiFistatus()
 
 void initNeoBlinky()
 {
-    xTaskCreate(neo_blinky, "Task NEO Blink", 2048, NULL, 2, NULL);
+    if (neoBlinkyTaskHandle == NULL)
+    {
+        Serial.println("[NEO] Starting Neo Blinky task...");
+
+        xTaskCreate(
+            neo_blinky,
+            "Task NEO Blink",
+            2048,
+            NULL,
+            2,
+            &neoBlinkyTaskHandle
+        );
+    }
+}
+
+
+void stopNeoBlinky()
+{
+    if (neoBlinkyTaskHandle != NULL)
+    {
+        Serial.println("[NEO] Stopping Neo Blinky task...");
+
+        vTaskDelete(neoBlinkyTaskHandle);
+
+        neoBlinkyTaskHandle = NULL;
+
+        LED4.clear();
+        LED4.show();
+    }
 }

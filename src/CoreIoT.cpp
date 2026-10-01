@@ -1,5 +1,5 @@
 #include "CoreIoT.h"
-
+#include "neo_blinky.h"
 #include "global.h"
 
 // =====================================================
@@ -7,7 +7,7 @@
 // =====================================================
 
 const char *coreIOT_Server = "app.coreiot.io";
-const char *coreIOT_Token = "cbgahhpy0q409xy74gya";
+const char *coreIOT_Token = "dPzMmVtfZIwEdQKuMBGN";
 const int mqttPort = 1883;
 int lastButtonS1 = -1;
 
@@ -102,35 +102,35 @@ void callback(
     // Read RPC method
     // -------------------------------------------------
 
-    // const char *method = doc["method"];
+    const char *method = doc["method"];
 
-    // if (method == nullptr)
-    // {
-    //     Serial.println("RPC method missing.");
-    //     return;
-    // }
+    if (method == nullptr)
+    {
+        Serial.println("RPC method missing.");
+        return;
+    }
 
     // -------------------------------------------------
     // Handle RPC
     // -------------------------------------------------
 
-    // if (strcmp(method, "setSwitchState") == 0)
-    // {
-    //     bool state = doc["params"];
+    if (strcmp(method, "setSwitchState") == 0)
+    {
+        bool state = doc["params"];
 
-    //     switch_state = state;
+        switch_state = state;
 
-    //     Serial.print("CoreIoT Switch state = ");
+        Serial.print("CoreIoT Switch state = ");
 
-    //     if (switch_state)
-    //     {
-    //         Serial.println("ON");
-    //     }
-    //     else
-    //     {
-    //         Serial.println("OFF");
-    //     }
-    // }
+        if (switch_state)
+        {
+            Serial.println("ON");
+        }
+        else
+        {
+            Serial.println("OFF");
+        }
+    }
 
     String topicStr = String(topic);
 
@@ -235,81 +235,98 @@ void coreiot_task(void *pvParameters)
 {
     setup_coreiot();
 
+    bool lastSwitchState = false;
+
     while (1)
     {
-        // -------------------------------------------------
-        // Reconnect if MQTT connection is lost
-        // -------------------------------------------------
         Serial.println("[CoreIoT] Task running");
+
         if (!client.connected())
         {
             Serial.println("MQTT disconnected. Attempting to reconnect...");
             reconnect();
         }
-        // -------------------------------------------------
-        // Keep MQTT connection alive
-        // -------------------------------------------------
+
         client.loop();
+
+
+        // ==========================================
+        // CONTROL NEO LED FROM COREIOT SWITCH
+        // ==========================================
+
+        if (switch_state != lastSwitchState)
+        {
+            lastSwitchState = switch_state;
+
+            if (switch_state)
+            {
+                Serial.println("[CoreIoT] Switch = TRUE");
+                Serial.println("[CoreIoT] Turning ON Neo LED");
+
+                initNeoBlinky();
+            }
+            else
+            {
+                Serial.println("[CoreIoT] Switch = FALSE");
+                Serial.println("[CoreIoT] Turning OFF Neo LED");
+
+                stopNeoBlinky();
+            }
+        }
+
+
         // ==========================================
         // Update S1 attribute state to CoreIoT
         // ==========================================
 
-        // if (glob_buttons1 != lastButtonS1)
-        // {
-        //     lastButtonS1 = glob_buttons1;
+        if (glob_buttons1 != lastButtonS1)
+        {
+            lastButtonS1 = glob_buttons1;
 
-        //     String attributePayload =
-        //         "{\"button_s1\":" +
-        //         String(glob_buttons1 ? "true" : "false") +
-        //         "}";
+            String attributePayload =
+                "{\"button_s1\":" +
+                String(glob_buttons1 ? "true" : "false") +
+                "}";
 
-        //     if (client.publish(
-        //             "v1/devices/me/attributes",
-        //             attributePayload.c_str()))
-        //     {
-        //         Serial.print("S1 updated: ");
-        //         Serial.println(attributePayload);
-        //     }
-        //     else
-        //     {
-        //         Serial.println("Failed to update S1");
-        //     }
-        // }
+            if (client.publish(
+                    "v1/devices/me/attributes",
+                    attributePayload.c_str()))
+            {
+                Serial.print("S1 updated: ");
+                Serial.println(attributePayload);
+            }
+            else
+            {
+                Serial.println("Failed to update S1");
+            }
+        }
 
-        // -------------------------------------------------
+
+        // ==========================================
         // Create telemetry JSON
-        // -------------------------------------------------
+        // ==========================================
+
         String payload =
             "{\"temperature\":" + String(global_temperature, 1) +
             ",\"humidity\":" + String(global_humidity, 1) +
             ",\"light\":" + String(global_light) +
             "}";
 
-        // -------------------------------------------------
-        // Publish telemetry
-        // -------------------------------------------------
 
         if (client.connected())
         {
-            bool success = client.publish("v1/devices/me/telemetry", payload.c_str());
+            bool success = client.publish(
+                "v1/devices/me/telemetry",
+                payload.c_str()
+            );
 
-            if (success)
+            if (!success)
             {
-                // Serial.print("Switch state:");
-                // Serial.println(switch_state);
-                // Serial.print("Published to CoreIoT: ");
-                // Serial.println(payload);
-            }
-            else
-            {
-                Serial.println(
-                    "Failed to publish telemetry.");
+                Serial.println("Failed to publish telemetry.");
             }
         }
-        // -------------------------------------------------
-        // Publish every 2 seconds
-        // -------------------------------------------------
-        vTaskDelay(1000);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
