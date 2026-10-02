@@ -5,6 +5,15 @@
 #define LIGHT_DEVICE_NAME "inno-013-db8d"
 #define LIGHT_SENSOR_ADDRESS "0c:8b:95:fa:42:fe"
 
+#define TEMP_DEVICE_NAME "inno-004-8645"
+#define TEMP_SENSOR_ADDRESS "08:a6:f7:07:79:e6"
+
+#define PH_DEVICE_NAME "BLE-9909"
+#define PH_SENSOR_ADDRESS "bc:96:51:5b:d9:ec"
+
+#define PH_SERVICE_UUID "FF01"
+#define PH_CHARACTERISTIC_UUID "FF02"
+
 static NimBLEClient *lightClient = nullptr;
 static NimBLERemoteCharacteristic *lightNotifyChar = nullptr;
 
@@ -13,11 +22,11 @@ static NimBLERemoteCharacteristic *lightNotifyChar = nullptr;
 // =====================================================
 // #define TEMP_DEVICE_NAME "inno-004-9377"
 // #define TEMP_SENSOR_ADDRESS "08:a6:f7:09:6c:da"
-#define TEMP_DEVICE_NAME "inno-004-8645"
-#define TEMP_SENSOR_ADDRESS  "08:a6:f7:07:79:e6"
-
 static NimBLEClient *tempClient = nullptr;
 static NimBLERemoteCharacteristic *tempNotifyChar = nullptr;
+
+NimBLEClient *phClient = nullptr;
+const NimBLEAdvertisedDevice *phDevice = nullptr;
 
 // =====================================================
 // UUID - Nordic UART Service
@@ -31,6 +40,336 @@ static const char *UART_NOTIFY_UUID =
 
 static const char *UART_WRITE_UUID =
     "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+const NimBLEAdvertisedDevice *findPHSensor()
+{
+    NimBLEScan *scan = NimBLEDevice::getScan();
+
+    scan->setActiveScan(true);
+    scan->setInterval(100);
+    scan->setWindow(80);
+
+    Serial.println("[PH] Scanning for BLE-9909...");
+
+    NimBLEScanResults results = scan->getResults(5000);
+
+    for (int i = 0; i < results.getCount(); i++)
+    {
+        const NimBLEAdvertisedDevice *device =
+            results.getDevice(i);
+
+        String name = device->getName().c_str();
+        String address = device->getAddress().toString().c_str();
+
+        Serial.print("[PH] Found: ");
+        Serial.print(name);
+        Serial.print(" / ");
+        Serial.println(address);
+
+        if (
+            name == PH_DEVICE_NAME &&
+            address.equalsIgnoreCase(PH_SENSOR_ADDRESS))
+        {
+            Serial.println("[PH] Target sensor found!");
+            return device;
+        }
+    }
+
+    Serial.println("[PH] Sensor not found.");
+    return nullptr;
+}
+
+void deCode(uint8_t *pValue, uint8_t len)
+{
+    uint8_t tmp;
+    uint8_t hibit;
+    uint8_t lobit;
+    uint8_t hibit1;
+    uint8_t lobit1;
+
+    for (int i = len - 1; i > 0; i--)
+    {
+        tmp = pValue[i];
+
+        hibit1 = (tmp & 0x55) << 1;
+        lobit1 = (tmp & 0xAA) >> 1;
+
+        tmp = pValue[i - 1];
+
+        hibit = (tmp & 0x55) << 1;
+        lobit = (tmp & 0xAA) >> 1;
+
+        pValue[i] = ~(hibit1 | lobit);
+        pValue[i - 1] = ~(hibit | lobit1);
+    }
+}
+
+// =====================================================
+// PH sensor notification
+// =====================================================
+
+void phNotifyCallback(
+    NimBLERemoteCharacteristic *characteristic,
+    uint8_t *data,
+    size_t length,
+    bool isNotify
+)
+{
+    // BLE-9909 realtime frame của thiết bị bạn đang là 29 byte
+    if (length < 21)
+    {
+        Serial.print("[PH] Invalid packet length: ");
+        Serial.println(length);
+        return;
+    }
+
+    // Copy dữ liệu vì chúng ta sẽ decode packet
+    uint8_t packet[32];
+
+    if (length > sizeof(packet))
+    {
+        Serial.println("[PH] Packet too large!");
+        return;
+    }
+
+    memcpy(packet, data, length);
+
+    // ================================================
+    // RAW PACKET
+    // ================================================
+    // Serial.print("[PH RAW] ");
+    // Serial.print(length);
+    // Serial.print(" bytes: ");
+
+    // for (size_t i = 0; i < length; i++)
+    // {
+    //     if (packet[i] < 0x10)
+    //         Serial.print("0");
+
+    //     Serial.print(packet[i], HEX);
+    //     Serial.print(" ");
+    // }
+
+    // Serial.println();
+
+    // ================================================
+    // DECODE
+    // ================================================
+    deCode(packet, length);
+
+    // ================================================
+    // pH
+    // byte 3 = high
+    // byte 4 = low
+    // ================================================
+    uint16_t rawPH =
+        ((uint16_t)packet[3] << 8) |
+        packet[4];
+
+    global_ph = rawPH / 100.0f;
+
+    // ================================================
+    // Temperature của BLE-9909
+    // byte 13 = high
+    // byte 14 = low
+    // ================================================
+    uint16_t rawTemp =
+        ((uint16_t)packet[13] << 8) |
+        packet[14];
+
+    float waterTemp =
+        rawTemp / 10.0f;
+
+    // ================================================
+    // DEBUG
+    // ================================================
+    Serial.print("[PH] pH = ");
+    Serial.print(global_ph, 2);
+
+    Serial.print(" | Temp = ");
+    Serial.print(waterTemp, 1);
+
+    Serial.println(" C");
+}
+
+bool connectPHSensor(const NimBLEAdvertisedDevice *device)
+{
+    if (device == nullptr)
+        return false;
+
+    phClient = NimBLEDevice::createClient();
+
+    if (phClient == nullptr)
+    {
+        Serial.println("[PH] Failed to create client.");
+        return false;
+    }
+
+    Serial.println("[PH] Connecting...");
+
+    if (!phClient->connect(device))
+    {
+        Serial.println("[PH] Connection failed.");
+        NimBLEDevice::deleteClient(phClient);
+        phClient = nullptr;
+        return false;
+    }
+
+    Serial.println("[PH] Connected!");
+
+    auto services = phClient->getServices(true);
+
+    Serial.println();
+    Serial.println("========== PH SENSOR GATT ==========");
+
+    if (services.empty())
+    {
+        Serial.println("[PH] No services found!");
+        Serial.println("====================================");
+        return false;
+    }
+
+    for (auto *service : services)
+    {
+        Serial.print("SERVICE: ");
+        Serial.println(
+            service->getUUID().toString().c_str());
+
+        auto characteristics = service->getCharacteristics(true);
+
+        if (characteristics.empty())
+        {
+            Serial.println("  No characteristics");
+            continue;
+        }
+
+        for (auto *characteristic : characteristics)
+        {
+            Serial.print("  CHARACTERISTIC: ");
+            Serial.println(
+                characteristic->getUUID().toString().c_str());
+
+            Serial.print("    Properties: ");
+
+            if (characteristic->canRead())
+                Serial.print("READ ");
+
+            if (characteristic->canWrite())
+                Serial.print("WRITE ");
+
+            if (characteristic->canWriteNoResponse())
+                Serial.print("WRITE_NR ");
+
+            if (characteristic->canNotify())
+                Serial.print("NOTIFY ");
+
+            if (characteristic->canIndicate())
+                Serial.print("INDICATE ");
+
+            Serial.println();
+        }
+    }
+
+    Serial.println("====================================");
+
+
+    // =================================================
+    // LẤY SERVICE 0xFF01
+    // =================================================
+
+    NimBLERemoteService *phService =
+        phClient->getService("FF01");
+
+    if (phService == nullptr)
+    {
+        Serial.println("[PH] FF01 service not found!");
+        return false;
+    }
+
+    Serial.println("[PH] FF01 service found!");
+
+
+    // =================================================
+    // LẤY CHARACTERISTIC 0xFF02
+    // =================================================
+
+    NimBLERemoteCharacteristic *phCharacteristic =
+        phService->getCharacteristic("FF02");
+
+    if (phCharacteristic == nullptr)
+    {
+        Serial.println("[PH] FF02 characteristic not found!");
+        return false;
+    }
+
+    Serial.println("[PH] FF02 characteristic found!");
+
+
+    // =================================================
+    // SUBSCRIBE NOTIFY
+    // =================================================
+
+    if (phCharacteristic->canNotify())
+    {
+        bool ok = phCharacteristic->subscribe(
+            true,
+            phNotifyCallback
+        );
+
+        Serial.print("[PH] Subscribe: ");
+        Serial.println(ok ? "OK" : "FAILED");
+    }
+    else
+    {
+        Serial.println("[PH] FF02 does not support NOTIFY!");
+    }
+
+
+    // =================================================
+    // READ GIÁ TRỊ HIỆN TẠI CỦA FF02
+    // =================================================
+
+    if (phCharacteristic->canRead())
+    {
+        NimBLEAttValue value =
+            phCharacteristic->readValue();
+
+        Serial.print("[PH READ] ");
+        Serial.print(value.size());
+        Serial.print(" bytes: ");
+
+        const uint8_t *data = value.data();
+
+        for (size_t i = 0; i < value.size(); i++)
+        {
+            if (data[i] < 0x10)
+                Serial.print("0");
+
+            Serial.print(data[i], HEX);
+            Serial.print(" ");
+        }
+
+        Serial.println();
+    }
+    else
+    {
+        Serial.println("[PH] FF02 does not support READ!");
+    }
+
+    return true;
+}
+
+void connectWaterPHSensor()
+{
+    const NimBLEAdvertisedDevice *device =
+        findPHSensor();
+
+    if (device == nullptr)
+        return;
+
+    if (!connectPHSensor(device))
+        return;
+}
 
 // =====================================================
 // Light sensor notification
@@ -61,10 +400,10 @@ void lightNotifyCallback(
 
     global_light = lux;
 
-    Serial.print("[LIGHT] ");
-    Serial.print(global_light, 2);
-    Serial.println(" lux");
-    
+    // Serial.print("[LIGHT] ");
+    // Serial.print(global_light, 2);
+    // Serial.println(" lux");
+
     vTaskDelay(50);
 }
 
@@ -111,8 +450,7 @@ void tempNotifyCallback(
 // Connect light sensor
 // =====================================================
 
-bool connectLightSensor(
-    const NimBLEAdvertisedDevice *device)
+bool connectLightSensor(const NimBLEAdvertisedDevice *device)
 {
     if (device == nullptr)
     {
@@ -348,22 +686,26 @@ bool connectTemperatureSensor(
             // NOTIFY
             // =========================================
 
-            if (characteristic->canNotify()){
+            if (characteristic->canNotify())
+            {
                 Serial.println(
                     "    Subscribing to notification...");
 
-                if (characteristic->subscribe(true, tempNotifyCallback)){
+                if (characteristic->subscribe(true, tempNotifyCallback))
+                {
                     Serial.println("    Notification subscribed.");
 
                     // Save the characteristic.
                     // Later, once we identify which one
                     // is the temperature data characteristic,
                     // we'll keep only that one.
-                    if (tempNotifyChar == nullptr){
+                    if (tempNotifyChar == nullptr)
+                    {
                         tempNotifyChar = characteristic;
                     }
                 }
-                else{
+                else
+                {
                     Serial.println("    Notification subscription FAILED.");
                 }
             }
@@ -415,7 +757,8 @@ void BLE1()
     const NimBLEAdvertisedDevice *
         temperatureDevice = nullptr;
 
-    for (int i = 0; i < results.getCount(); i++){
+    for (int i = 0; i < results.getCount(); i++)
+    {
         const NimBLEAdvertisedDevice *device =
             results.getDevice(i);
 
@@ -427,7 +770,8 @@ void BLE1()
         // Light sensor
         // ---------------------------------------------
 
-        if (device->haveName() && device->getName() == LIGHT_DEVICE_NAME){
+        if (device->haveName() && device->getName() == LIGHT_DEVICE_NAME)
+        {
             lightDevice = device;
 
             Serial.println();
@@ -441,7 +785,8 @@ void BLE1()
         // Temperature sensor
         // ---------------------------------------------
 
-        if (device->haveName() && device->getName() == TEMP_DEVICE_NAME){
+        if (device->haveName() && device->getName() == TEMP_DEVICE_NAME)
+        {
             temperatureDevice = device;
 
             Serial.println();
@@ -458,10 +803,12 @@ void BLE1()
 
     bool lightOK = false;
 
-    if (lightDevice != nullptr){
+    if (lightDevice != nullptr)
+    {
         lightOK = connectLightSensor(lightDevice);
     }
-    else{
+    else
+    {
         Serial.println("Light sensor not found!");
     }
 
@@ -479,6 +826,8 @@ void BLE1()
     {
         Serial.println("Temperature sensor not found!");
     }
+
+    connectWaterPHSensor();
 
     // =================================================
     // Final status

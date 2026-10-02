@@ -37,6 +37,7 @@ extern PubSubClient client;
 extern NimBLEClient* client1;
 extern bool switch_state;
 extern float max_light;
+extern float global_ph;
 void LEDWiFistatus();
 
 #endif  

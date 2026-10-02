@@ -4,7 +4,8 @@ Adafruit_NeoPixel Connection(LED_COUNT_W, NEO_PIN_W, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel LED4(LED_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 TaskHandle_t neoBlinkyTaskHandle = NULL;
-
+float currentBrightness = 0.0f;
+const float SMOOTH_STEP = 3.0f;
 void neo_blinky(void *pvParameters)
 {
     LED4.begin();
@@ -15,7 +16,8 @@ void neo_blinky(void *pvParameters)
     while (switch_state)
     {
         float light = global_light;
-
+        float maxLight = max_light;
+            
         if (light > max_light)
             light = max_light;
 

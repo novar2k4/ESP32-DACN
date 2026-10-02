@@ -11,4 +11,5 @@ int s1 = 0;
 int s2 = 0;
 bool switch_state = 1;
 float max_light = 330;
+float global_ph = 0.0f;
 void LEDWiFistatus();

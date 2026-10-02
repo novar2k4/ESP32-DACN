@@ -7,7 +7,7 @@
 // =====================================================
 
 const char *coreIOT_Server = "app.coreiot.io";
-const char *coreIOT_Token = "dPzMmVtfZIwEdQKuMBGN";
+const char *coreIOT_Token = "cbgahhpy0q409xy74gya";
 const int mqttPort = 1883;
 int lastButtonS1 = -1;
 
@@ -145,7 +145,8 @@ void callback(
                 String("v1/devices/me/rpc/request/").length());
 
         const char *method = doc["method"];
-
+        String responseTopic =
+                "v1/devices/me/rpc/response/" + requestId;
         // -------------------------------------------------
         // setMaxLight(value)
         // -------------------------------------------------
@@ -166,8 +167,7 @@ void callback(
             Serial.println(max_light);
 
             // Trả lại giá trị hiện tại cho Core IoT
-            String responseTopic =
-                "v1/devices/me/rpc/response/" + requestId;
+            
 
             String response =
                 String(max_light, 1);
@@ -185,8 +185,6 @@ void callback(
             Serial.print("[RPC] getMaxLight -> ");
             Serial.println(max_light);
 
-            String responseTopic =
-                "v1/devices/me/rpc/response/" + requestId;
 
             String response =
                 String(max_light, 1);
@@ -310,6 +308,7 @@ void coreiot_task(void *pvParameters)
             "{\"temperature\":" + String(global_temperature, 1) +
             ",\"humidity\":" + String(global_humidity, 1) +
             ",\"light\":" + String(global_light) +
+            ",\"ph\":" + String(global_ph, 2) +
             "}";
 
 
