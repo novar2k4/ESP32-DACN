@@ -424,19 +424,13 @@ void tempNotifyCallback(
         return;
 
     // Check header / packet type / footer
-    if (data[0] != 0xAA ||
-        data[1] != 0x04 ||
-        data[10] != 0xBB)
-    {
+    if (data[0] != 0xAA || data[1] != 0x04 || data[10] != 0xBB) {
         return;
     }
 
     float temperature = 0.0f;
 
-    memcpy(
-        &temperature,
-        &data[5],
-        sizeof(float));
+    memcpy( &temperature, &data[5], sizeof(float));
 
     global_temperature = temperature;
 
