@@ -1,5 +1,7 @@
 #include "BLE.h"
 
+static bool bleStatusTaskStarted = false;
+
 void BLE1()
 {
     delay(5000);
@@ -123,3 +125,46 @@ void BLE1()
 
     Serial.println("====================================");
 }
+
+void printBLEStatus()
+{
+    Serial.println();
+    Serial.println("========== BLE CONNECTION STATUS ==========");
+
+    Serial.print("Light Sensor:        ");
+    Serial.println(
+        isLightConnected()
+            ? "CONNECTED"
+            : "DISCONNECTED"
+    );
+
+    Serial.print("Temperature Sensor:  ");
+    Serial.println(
+        isTemperatureConnected()
+            ? "CONNECTED"
+            : "DISCONNECTED"
+    );
+
+    Serial.print("Water Quality:       ");
+    Serial.println(
+        isWaterQualityConnected()
+            ? "CONNECTED"
+            : "DISCONNECTED"
+    );
+
+    Serial.println("===========================================");
+}
+
+void BLEStatusTask(void *pvParameters)
+{
+    while (1)
+    {
+        printBLEStatus();
+
+        vTaskDelay(7000);
+    }
+}
+
+void initBLEStatusTask(){
+    xTaskCreate(BLEStatusTask,"BLE Status Task",4096,NULL,1,NULL);
+}   

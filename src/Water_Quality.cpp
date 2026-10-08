@@ -1,14 +1,18 @@
 #include "Water_Quality.h"
 
-
-static const char *PH_DEVICE_NAME = "BLE-9909";
-static const char *PH_SENSOR_ADDRESS = "bc:96:51:5b:d9:ec";
-
 static const char *PH_SERVICE_UUID = "FF01";
 static const char *PH_CHARACTERISTIC_UUID = "FF02";
 
 static NimBLEClient *waterQualityClient = nullptr;
 static NimBLERemoteCharacteristic *waterQualityNotifyChar = nullptr;
+
+bool isWaterQualityConnected()
+{
+    return (
+       waterQualityClient != nullptr &&
+        waterQualityClient->isConnected()
+    );
+}
 
 bool isWaterQualityDevice(const NimBLEAdvertisedDevice *device)
 {

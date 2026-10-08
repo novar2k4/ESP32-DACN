@@ -29,6 +29,7 @@
 #include "Light.h"
 #include "TempHumid.h"
 #include "Water_Quality.h"
+#include "Sensors.h"
 
 extern float global_temperature;
 extern float global_humidity;
@@ -43,6 +44,8 @@ extern bool switch_state;
 extern float max_light;
 extern float global_ph;
 extern int global_ec;
+
+
 void LEDWiFistatus();
 
 #endif  

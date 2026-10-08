@@ -1,8 +1,5 @@
 #include "Light.h"
 
-static const char *LIGHT_DEVICE_NAME = "inno-013-db8d";
-static const char *LIGHT_SENSOR_ADDRESS = "0c:8b:95:fa:42:fe";
-
 static NimBLEClient *lightClient = nullptr;
 static NimBLERemoteCharacteristic *lightNotifyChar = nullptr;
 
@@ -47,9 +44,9 @@ static void lightNotifyCallback(
 
     global_light = lux;
 
-    Serial.print("[LIGHT] ");
-    Serial.print(global_light, 2);
-    Serial.println(" lux");
+    // Serial.print("[LIGHT] ");
+    // Serial.print(global_light, 2);
+    // Serial.println(" lux");
 }
 
 bool connectLightSensor(const NimBLEAdvertisedDevice *device)

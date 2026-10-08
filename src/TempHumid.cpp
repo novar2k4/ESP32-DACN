@@ -2,9 +2,6 @@
 
 DHT20 DHT;
 
-static const char *TEMP_DEVICE_NAME = "inno-004-8645";
-static const char *TEMP_SENSOR_ADDRESS = "08:a6:f7:07:79:e6";
-
 static NimBLEClient *tempClient = nullptr;
 static NimBLERemoteCharacteristic *tempNotifyChar = nullptr;
 
@@ -34,6 +31,14 @@ void initHumid() {
 }
 
 //// TEMP SENSOR /////
+
+bool isTemperatureConnected()
+{
+    return (
+        tempClient != nullptr &&
+        tempClient->isConnected()
+    );
+}
 
 bool isTempDevice(const NimBLEAdvertisedDevice *device)
 {
@@ -71,9 +76,9 @@ static void tempNotifyCallback(
 
     global_temperature = temperature;
 
-    Serial.print("[TEMP] ");
-    Serial.print(global_temperature, 2);
-    Serial.println(" C");
+    // Serial.print("[TEMP] ");
+    // Serial.print(global_temperature, 2);
+    // Serial.println(" C");
 }
 
 bool connectTempSensor(const NimBLEAdvertisedDevice *device)

@@ -1,5 +1,7 @@
 #include "Sensors.h"
 
+#define RELAY_PIN 6
+
 void setSwitchState(bool state)
 {
     switch_state = state;
@@ -13,3 +15,20 @@ void setMaxLight(float value)
 
     max_light = value;
 }
+
+//// RELAY ////
+void relayTask(){
+    pinMode(RELAY_PIN, OUTPUT);
+    // digitalWrite(RELAY_PIN, LOW);
+
+
+    digitalWrite(RELAY_PIN, LOW);
+    // delay(5000);
+    // digitalWrite(RELAY_PIN, HIGH);
+    // delay(2000);
+    // digitalWrite(RELAY_PIN, LOW);
+
+}
+
+
+

@@ -4,6 +4,6 @@
 
 
 void BLE1();
-
+void initBLEStatusTask();
 
 #endif // BLE_H
