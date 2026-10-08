@@ -26,6 +26,10 @@
 #include "BLE.h"
 // #include "BLE.cpp"
 
+#include "Light.h"
+#include "TempHumid.h"
+#include "Water_Quality.h"
+
 extern float global_temperature;
 extern float global_humidity;
 extern float global_light;

@@ -8,6 +8,7 @@ void setup() {
   // initWebSocket();
   coreiot_init();
   BLE1();
+  initHumid();
 }
 
 void loop() {

@@ -312,9 +312,7 @@ void coreiot_task(void *pvParameters)
             ",\"ec\":" + String(global_ec) +
             "}";
 
-
-        if (client.connected())
-        {
+        if (client.connected()){
             bool success = client.publish(
                 "v1/devices/me/telemetry",
                 payload.c_str()
