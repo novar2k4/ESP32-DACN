@@ -309,6 +309,7 @@ void coreiot_task(void *pvParameters)
             ",\"humidity\":" + String(global_humidity, 1) +
             ",\"light\":" + String(global_light) +
             ",\"ph\":" + String(global_ph, 2) +
+            ",\"ec\":" + String(global_ec) +
             "}";
 
 

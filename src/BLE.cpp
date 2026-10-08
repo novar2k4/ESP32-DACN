@@ -108,70 +108,138 @@ void deCode(uint8_t *pValue, uint8_t len)
 // PH sensor notification
 // =====================================================
 
-void phNotifyCallback(
+// void phNotifyCallback(
+//     NimBLERemoteCharacteristic *characteristic,
+//     uint8_t *data,
+//     size_t length,
+//     bool isNotify
+// )
+// {
+//     // BLE-9909 realtime frame của thiết bị bạn đang là 29 byte
+//     if (length < 21)
+//     {
+//         Serial.print("[PH] Invalid packet length: ");
+//         Serial.println(length);
+//         return;
+//     }
+
+//     // Copy dữ liệu vì chúng ta sẽ decode packet
+//     uint8_t packet[32];
+
+//     if (length > sizeof(packet))
+//     {
+//         Serial.println("[PH] Packet too large!");
+//         return;
+//     }
+
+//     memcpy(packet, data, length);
+
+//     // ================================================
+//     // RAW PACKET
+//     // ================================================
+//     // Serial.print("[PH RAW] ");
+//     // Serial.print(length);
+//     // Serial.print(" bytes: ");
+
+//     // for (size_t i = 0; i < length; i++)
+//     // {
+//     //     if (packet[i] < 0x10)
+//     //         Serial.print("0");
+
+//     //     Serial.print(packet[i], HEX);
+//     //     Serial.print(" ");
+//     // }
+
+//     // Serial.println();
+
+//     // ================================================
+//     // DECODE
+//     // ================================================
+//     deCode(packet, length);
+
+//     // ================================================
+//     // pH
+//     // byte 3 = high
+//     // byte 4 = low
+//     // ================================================
+//     uint16_t rawPH =
+//         ((uint16_t)packet[3] << 8) |
+//         packet[4];
+
+//     global_ph = rawPH / 100.0f;
+
+//     // ================================================
+//     // Temperature của BLE-9909
+//     // byte 13 = high
+//     // byte 14 = low
+//     // ================================================
+//     uint16_t rawTemp =
+//         ((uint16_t)packet[13] << 8) |
+//         packet[14];
+
+//     float waterTemp =
+//         rawTemp / 10.0f;
+
+//     // ================================================
+//     // DEBUG
+//     // ================================================
+//     Serial.print("[PH] pH = ");
+//     Serial.print(global_ph, 2);
+
+//     Serial.print(" | Temp = ");
+//     Serial.print(waterTemp, 1);
+
+//     Serial.println(" C");
+// }
+
+static void phNotifyCallback(
     NimBLERemoteCharacteristic *characteristic,
     uint8_t *data,
     size_t length,
-    bool isNotify
-)
+    bool isNotify)
 {
-    // BLE-9909 realtime frame của thiết bị bạn đang là 29 byte
-    if (length < 21)
+    if (length < 22 || length > 32)
     {
         Serial.print("[PH] Invalid packet length: ");
         Serial.println(length);
         return;
     }
 
-    // Copy dữ liệu vì chúng ta sẽ decode packet
     uint8_t packet[32];
-
-    if (length > sizeof(packet))
-    {
-        Serial.println("[PH] Packet too large!");
-        return;
-    }
 
     memcpy(packet, data, length);
 
     // ================================================
-    // RAW PACKET
-    // ================================================
-    // Serial.print("[PH RAW] ");
-    // Serial.print(length);
-    // Serial.print(" bytes: ");
-
-    // for (size_t i = 0; i < length; i++)
-    // {
-    //     if (packet[i] < 0x10)
-    //         Serial.print("0");
-
-    //     Serial.print(packet[i], HEX);
-    //     Serial.print(" ");
-    // }
-
-    // Serial.println();
-
-    // ================================================
     // DECODE
     // ================================================
-    deCode(packet, length);
+    deCode(
+        packet,
+        static_cast<uint8_t>(length)
+    );
 
     // ================================================
-    // pH
-    // byte 3 = high
-    // byte 4 = low
+    // pH: byte 3-4
     // ================================================
     uint16_t rawPH =
         ((uint16_t)packet[3] << 8) |
         packet[4];
 
-    global_ph = rawPH / 100.0f;
+    global_ph =
+        rawPH / 100.0f;
 
     // ================================================
-    // Temperature của BLE-9909
-    // byte 13 = high
-    // byte 14 = low
+    // EC: byte 5-6
+    // Unit: µS/cm
+    // ================================================
+    uint16_t rawEC =
+        ((uint16_t)packet[5] << 8) |
+        packet[6];
+
+    global_ec =
+        (float)rawEC;
+
+    // ================================================
+    // Temperature: byte 13-14
     // ================================================
     uint16_t rawTemp =
         ((uint16_t)packet[13] << 8) |
@@ -181,14 +249,17 @@ void phNotifyCallback(
         rawTemp / 10.0f;
 
     // ================================================
-    // DEBUG
+    // Debug
     // ================================================
-    Serial.print("[PH] pH = ");
+    Serial.print("[WATER] pH = ");
     Serial.print(global_ph, 2);
+
+    Serial.print(" | EC = ");
+    Serial.print(global_ec, 0);
+    Serial.print(" uS/cm");
 
     Serial.print(" | Temp = ");
     Serial.print(waterTemp, 1);
-
     Serial.println(" C");
 }
 
