@@ -44,7 +44,7 @@ extern bool switch_state;
 extern float max_light;
 extern float global_ph;
 extern int global_ec;
-
+extern bool water_state;
 
 void LEDWiFistatus();
 

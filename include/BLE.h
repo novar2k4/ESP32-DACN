@@ -4,6 +4,8 @@
 
 
 void BLE1();
+void printBLEStatus();
+void reconnectBLEDevices();
+void BLEStatusTask(void *pvParameters);
 void initBLEStatusTask();
-
 #endif // BLE_H
