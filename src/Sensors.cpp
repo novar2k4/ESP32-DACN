@@ -1,6 +1,6 @@
 #include "Sensors.h"
 
-#define SCREEN_5IN1 1
+#define SCREEN_5IN1_PIN 1
 
 void setSwitchState(bool state)
 {
@@ -16,19 +16,19 @@ void setMaxLight(float value)
     max_light = value;
 }
 
-//// RELAY ////
+//// Screen 5in1 Task ////
 void screenTask(){
-    pinMode(SCREEN_5IN1, OUTPUT);
-    // digitalWrite(SCREEN_5IN1, LOW);
+    pinMode(SCREEN_5IN1_PIN, OUTPUT);
+    // digitalWrite(SCREEN_5IN1_PIN, LOW);
     Serial.print("Water Quality Sensor Missing: ");
     Serial.println(water_state ? "YES" : "NO");
         if (water_state){
-            digitalWrite(SCREEN_5IN1, HIGH);
+            digitalWrite(SCREEN_5IN1_PIN, HIGH);
             delay(50);
-            digitalWrite(SCREEN_5IN1, LOW);
+            digitalWrite(SCREEN_5IN1_PIN, LOW);
             delay(3000);
         }
-        else digitalWrite(SCREEN_5IN1, LOW);
+        else digitalWrite(SCREEN_5IN1_PIN, LOW);
 }
 
 
