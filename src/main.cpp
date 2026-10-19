@@ -15,7 +15,7 @@ void setup() {
 
 void loop() {
   // webSocketLoop();
-  relayTask();
+  screenTask();
   LEDWiFistatus();
   checkWiFistatus();  
  

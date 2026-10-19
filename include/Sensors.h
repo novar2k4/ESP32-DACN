@@ -4,5 +4,5 @@
 
 void setSwitchState(bool state);
 void setMaxLight(float value);
-void relayTask();
+void screenTask();
 #endif // SENSORS_H

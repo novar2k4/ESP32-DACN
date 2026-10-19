@@ -1,6 +1,6 @@
 #include "Sensors.h"
 
-#define RELAY_PIN 6
+#define SCREEN_5IN1 1
 
 void setSwitchState(bool state)
 {
@@ -17,18 +17,18 @@ void setMaxLight(float value)
 }
 
 //// RELAY ////
-void relayTask(){
-    pinMode(RELAY_PIN, OUTPUT);
-    // digitalWrite(RELAY_PIN, LOW);
-    Serial.print("[RELAY] Water Quality Sensor Missing: ");
+void screenTask(){
+    pinMode(SCREEN_5IN1, OUTPUT);
+    // digitalWrite(SCREEN_5IN1, LOW);
+    Serial.print("Water Quality Sensor Missing: ");
     Serial.println(water_state ? "YES" : "NO");
         if (water_state){
-            digitalWrite(RELAY_PIN, HIGH);
+            digitalWrite(SCREEN_5IN1, HIGH);
             delay(50);
-            digitalWrite(RELAY_PIN, LOW);
-            delay(5000);
+            digitalWrite(SCREEN_5IN1, LOW);
+            delay(3000);
         }
-        else digitalWrite(RELAY_PIN, LOW);
+        else digitalWrite(SCREEN_5IN1, LOW);
 }
 
 
