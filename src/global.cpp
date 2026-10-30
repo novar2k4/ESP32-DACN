@@ -3,6 +3,7 @@
 float global_temperature = 0;
 float global_humidity = 0;
 float global_light = 0;
+uint16_t global_tds = 0;
 int wifi = -1;
 int lastBounds1 = 0;
 int lastBounds2 = 0; 

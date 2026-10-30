@@ -121,6 +121,15 @@ static bool decodeWaterQualityPacket(
 
     global_ec = static_cast<float>(rawEC);
 
+    // ================================================
+// TDS: byte 7-8
+// ================================================
+uint16_t rawTDS =
+    ((uint16_t)packet[7] << 8) |
+    packet[8];
+
+global_tds = static_cast<float>(rawTDS);
+
     return true;
 }
 
@@ -155,47 +164,33 @@ static void waterQualityNotifyCallback(
 {
     if (length < 22 || length > 32)
     {
-        Serial.print(
-            "[WATER] Invalid packet length: ");
-
+        Serial.print("[WATER] Invalid packet length: ");
         Serial.println(length);
-
         return;
     }
 
     uint8_t packet[32];
 
-    memcpy(
-        packet,
-        data,
-        length);
-
+    memcpy(packet,data,length);
     // Decode BLE-9909
-    deCode(
-        packet,
-        static_cast<uint8_t>(length));
+    deCode(packet,static_cast<uint8_t>(length));
 
     // =================================================
-    // pH
+    // pH, EC, TDS 
     // =================================================
 
-    uint16_t rawPH =
-        ((uint16_t)packet[3] << 8) |
-        packet[4];
+    uint16_t rawPH =((uint16_t)packet[3] << 8) | packet[4];
+    global_ph = rawPH / 100.0f;
+    uint16_t rawEC = ((uint16_t)packet[5] << 8) | packet[6];
+    global_ec = (float)rawEC;
 
-    global_ph =
-        rawPH / 100.0f;
-
-    // =================================================
-    // EC
-    // =================================================
-
-    uint16_t rawEC =
-        ((uint16_t)packet[5] << 8) |
-        packet[6];
-
-    global_ec =
-        (float)rawEC;
+    uint16_t rawTDS = ((uint16_t)packet[7] << 8) | packet[8];
+    global_tds = rawTDS;
+    // ================================================
+    // Water temperature: byte 13-14
+    // ================================================
+    uint16_t rawTemp = ((uint16_t)packet[13] << 8) | packet[14];
+    float waterTemp = rawTemp / 10.0f;
 
     // =================================================
     // Debug
@@ -203,11 +198,12 @@ static void waterQualityNotifyCallback(
 
     Serial.print("[WATER] pH = ");
     Serial.print(global_ph, 2);
-
     Serial.print(" | EC = ");
     Serial.print(global_ec, 0);
-
     Serial.println(" uS/cm");
+    Serial.print(" | TDS: ");
+    Serial.print(global_tds);
+    Serial.print(" ppm");
 }
 
 // bool connectWaterQualitySensor(
@@ -307,8 +303,7 @@ static void waterQualityNotifyCallback(
 
 /// TEST
 
-bool connectWaterQualitySensor(
-    const NimBLEAdvertisedDevice *device)
+bool connectWaterQualitySensor(const NimBLEAdvertisedDevice *device)
 {
     if (waterQualityClient != nullptr)
     {

@@ -45,6 +45,7 @@ extern float max_light;
 extern float global_ph;
 extern int global_ec;
 extern bool water_state;
+extern uint16_t global_tds;
 
 void LEDWiFistatus();
 

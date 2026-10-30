@@ -310,6 +310,7 @@ void coreiot_task(void *pvParameters)
             ",\"light\":" + String(global_light) +
             ",\"ph\":" + String(global_ph, 2) +
             ",\"ec\":" + String(global_ec) +
+            ",\"tds\":" + String(global_tds) +
             "}";
 
         if (client.connected()){
